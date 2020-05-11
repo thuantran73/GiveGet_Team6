@@ -1,0 +1,113 @@
+package com.example.giveandgetapp.database;
+
+import android.app.Activity;
+import android.app.Application;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.giveandgetapp.R;
+import com.example.giveandgetapp.ui.notifications.NotificationsViewModel;
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+
+import javax.xml.datatype.Duration;
+
+public class RunableGetNotification implements Runnable{
+    NotificationsViewModel _modelNotification;
+    Database _database;
+    SessionManager _sessionManager;
+    Context _context;
+    BottomNavigationItemView _badgeView;
+    Activity _activity;
+    TextView _txtNumberNotifyCount;
+    int _numberOfNotRead;
+
+    public RunableGetNotification(NotificationsViewModel modelNotification, TextView txtNumberNotifyCount , Context context, Activity activity){
+        this._modelNotification = modelNotification;
+        this._database = new Database(context);
+        this._sessionManager = new SessionManager(context);
+        this._context = context;
+        this._activity = activity;
+        this._numberOfNotRead = Integer.parseInt(txtNumberNotifyCount.getText().toString());
+        this._txtNumberNotifyCount = txtNumberNotifyCount;
+    }
+
+    @Override
+    public void run() {
+        User currentUser = _sessionManager.getUserDetail();
+        int numberOfNotRead = 0;
+
+        Connection con = this._database.connectToDatabase();
+        String query = "SELECT TOP(10) " +
+                " n.Id" +
+                ",n.PostId" +
+                ",n.Status" +
+                ",n.CreateDate" +
+                ",n.Title" +
+                ",n.Contents" +
+                ",n.Type" +
+                ",p.Image" +
+                "  FROM [Notification] n LEFT JOIN [Post] p ON n.PostId = p.Id " +
+                "  WHERE UserId = " + currentUser.id +
+                "  ORDER BY Id DESC";
+
+        ResultSet rs = _database.excuteCommand(con, query);
+        ArrayList<FeedNotification> result = new ArrayList<FeedNotification>();
+
+        try {
+            while (rs.next()){
+                int id = rs.getInt("Id");
+                int postId = rs.getInt("PostId");
+                int status = rs.getInt("Status");
+                int idImage = rs.getInt("Image");
+                if(status == 1){
+                    numberOfNotRead++;
+                }
+                Timestamp tsCreateDate = rs.getTimestamp("CreateDate");
+                Date createDate = null;
+                if(tsCreateDate != null){
+                    createDate = new Date(tsCreateDate.getTime());
+                }
+
+                String title = rs.getString("Title");
+                String content = rs.getString("Contents");
+                int type = rs.getInt("Type");
+
+                FeedNotification item = new FeedNotification(id,postId,status,createDate,title,content,type,idImage);
+                result.add(item);
+            }
+
+            _numberOfNotRead = Integer.parseInt(_txtNumberNotifyCount.getText().toString());
+            if(_numberOfNotRead != numberOfNotRead){
+                final int finalNumberOfNotRead = numberOfNotRead;
+                _activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(finalNumberOfNotRead != 0){
+                            _txtNumberNotifyCount.setVisibility(View.VISIBLE);
+                            _txtNumberNotifyCount.setText(finalNumberOfNotRead+"");
+                        }else{
+                            _txtNumberNotifyCount.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                });
+            }
+            _modelNotification.getListNotification().postValue(result);
+
+
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+}
