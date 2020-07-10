@@ -227,18 +227,40 @@
                                     android:verticalSpacing="10dp" />
 
                             </LinearLayout>
+
+                            //tab3
+
+                            <LinearLayout
+                                android:id="@+id/tab3"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#dadada"
+                                android:orientation="vertical">
+
+                                <GridView
+                                    android:id="@+id/gridActorPostGived"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:columnWidth="100dp"
+                                    android:gravity="center"
+                                    android:horizontalSpacing="10dp"
+                                    android:numColumns="auto_fit"
+                                    android:stretchMode="columnWidth"
+                                    android:verticalSpacing="10dp" />
+
+                            </LinearLayout>
                         </FrameLayout>
                     </LinearLayout>
                 </TabHost>
             </LinearLayout>
 
-            <Button
-                android:id="@+id/btnlogout"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginBottom="10dp"
-                android:text="Đăng xuất"></Button>
+<!--            <Button-->
+<!--                android:id="@+id/btnlogout"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="40dp"-->
+<!--                android:layout_marginLeft="20dp"-->
+<!--                android:layout_marginBottom="10dp"-->
+<!--                android:text="Đăng xuất"></Button>-->
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

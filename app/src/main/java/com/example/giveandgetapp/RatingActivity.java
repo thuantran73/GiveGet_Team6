@@ -17,6 +17,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
+import android.widget.ScrollView;
+import android.widget.Scroller;
 import android.widget.TextView;
 
 import java.sql.Connection;
@@ -36,8 +38,6 @@ public class RatingActivity extends AppCompatActivity {
     private Button _btnLuuRating;
     private Button _btnHuyRating;
     private TextView _txtMain;
-    private Button _btnApprove;
-    private Button _btnDenied;
     private int _postId;
     private User _currentUser;
     private int _actorId;
@@ -48,7 +48,6 @@ public class RatingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rating);
         this._postId = getIntent().getIntExtra("Post_Id",0);
-
         _actorImageRating = findViewById(R.id.avatarActorRating);
         _txtTitlePostRating = findViewById(R.id.titlePostRating);
         _txtContentPostRating = findViewById(R.id.contentPostRating);
@@ -56,81 +55,25 @@ public class RatingActivity extends AppCompatActivity {
         _btnLuuRating = findViewById(R.id.btnLuuRating);
         _btnHuyRating = findViewById(R.id.btnHuyRating);
         _txtMain = findViewById(R.id.txtMain);
-        _btnApprove = findViewById(R.id.btnApprove);
-        _btnDenied = findViewById(R.id.btnDenied);
         _sessionManager = new SessionManager(this);
         _database = new Database(this);
         _currentUser = _sessionManager.getUserDetail();
         Connection con = _database.connectToDatabase();
-        String queryPost = "SELECT * FROM Post WHERE Id = "+_postId;
+        String queryPost = "SELECT *, Avatar FROM [Post] INNER JOIN [User] u ON Post.Actor = u.Id WHERE Post.Id = "+_postId;
         ResultSet rs = _database.excuteCommand(con,queryPost);
 
         try {
             if(rs.next()){
                 _txtTitlePostRating.setText(rs.getString("Title"));
                 _txtContentPostRating.setText(rs.getString("Contents"));
+                _actorImageRating.setImageBitmap(_database.getImageInDatabase(con,rs.getInt("Avatar")));
                 _actorId = rs.getInt("Actor");
                 _postTitle = rs.getString("Title");
             }
-
             con.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        //Button Approve
-        _btnApprove.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                _txtMain.setText("Đánh giá bài viết này");
-                _ratingBar.setVisibility(View.VISIBLE);
-                _btnLuuRating.setVisibility(View.VISIBLE);
-                _btnApprove.setVisibility(View.INVISIBLE);
-                _btnDenied.setVisibility(View.INVISIBLE);
-            }
-        });
-
-        //Button Denied
-        _btnDenied.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Connection con = _database.connectToDatabase();
-
-                String queryEditNotification = "UPDATE [Notification]" +
-                        "   SET Status = 2"+
-                        "   WHERE UserId="+_currentUser.id+
-                        "       AND PostId="+_postId+
-                        "       AND Type = 3";
-
-                _database.excuteCommand(con,queryEditNotification);
-
-                String queryEditPost = "UPDATE [Post]" +
-                        "   SET Status = 2" +
-                        "   WHERE Id = " + _postId;
-
-                _database.excuteCommand(con,queryEditPost);
-
-                SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date date = new Date();
-                String create_date = formater.format(date);
-                String queryNotification = "INSERT INTO [Notification]" +
-                        "           (UserId,PostId,Status,CreateDate,Title,Contents,Type)" +
-                        "     VALUES" +
-                        "           ("+_actorId +
-                        "           ,"+_postId +
-                        "           ,1" +
-                        "           ," + "CONVERT(datetime,'" +create_date+"',120)"+
-                        "           ,N'"+_currentUser.name+" Đã từ trối xác nhận món đồ này'" +
-                        "           ,N'Hãy chọn lại người nhận'" +
-                        "           ,2)";
-
-                _database.excuteCommand(con,queryNotification);
-
-
-                finish();
-            }
-        });
 
 
         //Button Luu
@@ -157,7 +100,7 @@ public class RatingActivity extends AppCompatActivity {
                         _database.excuteCommand(con,queryEdit);
 
                         String queryEditPost = "UPDATE [Post]" +
-                                "   SET Status = 4" +
+                                "   SET Status = 5" +
                                 "   WHERE Id = " + _postId;
 
                         _database.excuteCommand(con,queryEditPost);
@@ -185,7 +128,6 @@ public class RatingActivity extends AppCompatActivity {
                                 "       AND Type = 3";
 
                         _database.excuteCommand(con,queryEditNotification);
-
                         con.close();
                     }
                 } catch (SQLException e) {
@@ -193,11 +135,9 @@ public class RatingActivity extends AppCompatActivity {
                 }
 
                 Intent data = new Intent();
-                data.setData(Uri.parse(_postId+""));
+                data.setData(Uri.parse(_postId+","+_actorId));
                 setResult(RESULT_OK, data);
-
                 finish();
-
             }
         });
 
@@ -209,8 +149,5 @@ public class RatingActivity extends AppCompatActivity {
                 finish();
             }
         });
-
-        //Ratingbar
-
     }
 }

@@ -1,6 +1,7 @@
 package com.example.giveandgetapp;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,7 +15,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -34,12 +37,13 @@ import java.sql.Statement;
 public class LoginActivity extends Activity {
     private Database _database;
     private Button _btnLogin;
+    private Button _btnRegister;
     private Button _btnCancel;
     private EditText _txtEmail;
     private EditText _txtPassword;
     private ProgressBar _progressBar;
     private SessionManager _sessionManager;
-
+    private Button _btnAboutUs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +65,9 @@ public class LoginActivity extends Activity {
 
         //View element
         _btnLogin = findViewById(R.id.btn_login);
+        _btnRegister = findViewById(R.id.btn_register);
         _btnCancel = findViewById(R.id.btn_cancel);
+        _btnAboutUs = findViewById(R.id.btnAboutUs);
         _txtEmail = findViewById(R.id.txt_email);
         _txtPassword = findViewById(R.id.txt_password);
         _progressBar = findViewById(R.id.progressBar);
@@ -84,7 +90,7 @@ public class LoginActivity extends Activity {
 
 
                 Connection con = _database.connectToDatabase();
-                String query = "SELECT * FROM [User] WHERE Email = '"+email+"' AND Password = '"+password+"'";
+                String query = "SELECT * FROM [User] WHERE Email = '"+email+"' AND Password = '"+password+"' AND IsVerify=1";
                 ResultSet resultSet = _database.excuteCommand(con, query);
                 try {
                     if(resultSet.next()){
@@ -108,11 +114,41 @@ public class LoginActivity extends Activity {
                 _progressBar.setVisibility(View.INVISIBLE);
             }
         });
+
+        //Action button Register
+        _btnRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        _btnAboutUs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder _dialogAboutUs = new AlertDialog.Builder(LoginActivity.this);
+                View abc = getLayoutInflater().inflate(R.layout.dialog_about_us,null);
+                _dialogAboutUs.setView(abc);
+                final AlertDialog dialog = _dialogAboutUs.create();
+                Button _cancelDialogAboutUs = (Button) abc.findViewById(R.id.btnCancelAboutUs);
+                _cancelDialogAboutUs.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.cancel();
+                    }
+                });
+                dialog.show();
+            }
+        });
     }
 
     private void moveToMainActivity(){
         Intent goToNextActivity = new Intent(getApplicationContext(), MainActivity.class);
+        goToNextActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(goToNextActivity);
+        ActivityCompat.finishAffinity(this);
+
     }
 
     private boolean createSessionForUser(Connection con, ResultSet resultSet){
@@ -142,8 +178,9 @@ public class LoginActivity extends Activity {
            e.printStackTrace();
        }
         return false;
-
     }
+
+
 
 
 

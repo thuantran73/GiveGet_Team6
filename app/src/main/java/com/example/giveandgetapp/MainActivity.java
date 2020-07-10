@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
     private void getNotificationsInterval(NotificationsViewModel modelNotification, TextView txtNumberNotifyCount){
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(new RunableGetNotification(modelNotification ,txtNumberNotifyCount ,getApplicationContext(),this),
-                0, 5, TimeUnit.SECONDS);
+                0, 15, TimeUnit.SECONDS);
     }
 
     @Override
@@ -144,10 +144,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     _dashboardViewModel.setListFeedItem(newFeedItems1);
 
-
                     break;
-
-
             }
 
         }else if (requestCode == 11){
@@ -190,41 +187,22 @@ public class MainActivity extends AppCompatActivity {
                         newNotifications.add(item);
                     }
 
-                    txtNumberNotifyCount.setText(countNotRead+"");
+                    if(countNotRead != 0){
+                        txtNumberNotifyCount.setVisibility(View.VISIBLE);
+                        txtNumberNotifyCount.setText(countNotRead+"");
+                    }else{
+                        txtNumberNotifyCount.setVisibility(View.INVISIBLE);
+                    }
 
                     _notificationsViewModel.setListNotification(newNotifications);
-
-
-
                     break;
-
             }
         }else if (requestCode == 12){
             //On rating
             switch (resultCode){
                 //On rating
                 case RESULT_OK:
-                    final int postId = Integer.parseInt(data.getData().toString());
-                    //edit Post in profile view model
-                    _profileViewModel = ViewModelProviders.of(this).get(ProfileViewModel.class);
-
-                    if(_profileViewModel.getListPostProfileActor().getValue() == null){
-                        _profileViewModel.setListPostProfileActor(getInitListPostProfileActor(_profileViewModel));
-                    }
-                    ArrayList<PostProfile> currentPostProfiles = _profileViewModel.getListPostProfileActor().getValue();
-                    ArrayList<PostProfile> newPostProfiles = new ArrayList<PostProfile>();
-
-                    for (PostProfile item: currentPostProfiles) {
-                        if(item.postId == postId){
-                            item.status = 4;
-                        }
-
-
-                        newPostProfiles.add(item);
-                    }
-
-                    _profileViewModel.setListPostProfileActor(newPostProfiles);
-
+                    final int postId = Integer.parseInt(data.getData().toString().split(",")[0]);
 
                     //Set for notification
                     ArrayList<FeedNotification> currentNotifications = _notificationsViewModel.getListNotification().getValue();
@@ -242,19 +220,49 @@ public class MainActivity extends AppCompatActivity {
                         newNotifications.add(item);
                     }
 
-                    txtNumberNotifyCount.setText(countNotRead+"");
+                    if(countNotRead != 0){
+                        txtNumberNotifyCount.setVisibility(View.VISIBLE);
+                        txtNumberNotifyCount.setText(countNotRead+"");
+                    }else{
+                        txtNumberNotifyCount.setVisibility(View.INVISIBLE);
+                    }
 
                     _notificationsViewModel.setListNotification(newNotifications);
+
+                    int actorId = Integer.parseInt(data.getData().toString().split(",")[1]);
+
+                    //Go to activity actor info
+                    Intent intent = new Intent(this.getApplicationContext(), ActorInforActivity.class);
+                    intent.putExtra("Actor_Id",actorId);
+                    intent.putExtra("IsFromRating", true);
+                    this.startActivity(intent);
 
 
                     break;
 
             }
+        }else if(requestCode == 14){
+            //On Editing
+            final int postId1 = Integer.parseInt(data.getData().toString());
+
+            //Delete Post in dashboard view model
+            _dashboardViewModel = ViewModelProviders.of(this).get(DashboardViewModel.class);
+            ArrayList<FeedItem> currentFeedItems1 = _dashboardViewModel.getListFeedItem().getValue();
+            ArrayList<FeedItem> newFeedItems1 = new ArrayList<FeedItem>();
+
+            for (FeedItem item:currentFeedItems1) {
+                if(item.postId == postId1){
+                    newFeedItems1.add(getFeedItemById(postId1));
+                }else{
+                    newFeedItems1.add(item);
+                }
+            }
+            _dashboardViewModel.setListFeedItem(newFeedItems1);
+
         }
 
         super.onActivityResult(requestCode, resultCode, data);
     }
-
 
     private ArrayList<PostProfile> getInitListPostProfileActor(ProfileViewModel profileViewModel) {
         ArrayList<PostProfile> listPostProfile = new ArrayList<PostProfile>();
@@ -290,8 +298,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-
         return listPostProfile;
     }
 
@@ -304,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
 
         User currentUser = sessionManager.getUserDetail();
 
-        String query = "SELECT p.Id, a.Id as ActorId, a.Name as ActorName, p.Title, p.Contents, l.UserId as IsLiked, r.UserId as IsReceived, a.Avatar as ActorImage, p.CreateDate, p.Image, p.Image2, p.Image3" +
+        String query = "SELECT p.ReceiverCount ,p.LikeCount ,p.Id, a.Id as ActorId, a.Name as ActorName, p.Title, p.Contents, l.UserId as IsLiked, r.UserId as IsReceived, a.Avatar as ActorImage, p.CreateDate, p.Image, p.Image2, p.Image3, a.RatingCount" +
                 " FROM [Post] p" +
                 " INNER JOIN [User] a" +
                 " ON p.Actor = a.Id" +
@@ -327,24 +333,23 @@ public class MainActivity extends AppCompatActivity {
                 int Image = rs.getInt("Image");
                 int Image2 = rs.getInt("Image2");
                 int Image3 = rs.getInt("Image3");
+                int LikeCount = rs.getInt("LikeCount");
+                int ReceiverCount = rs.getInt("ReceiverCount");
+                float RatingCount = rs.getFloat("RatingCount");
                 Timestamp tsCreateDate = rs.getTimestamp("CreateDate");
                 Date createDate = null;
                 if(tsCreateDate != null){
                     createDate = new Date(tsCreateDate.getTime());
                 }
 
-                item = new FeedItem(postId,actorId,actorImage,actorName,title,content,Image,Image2,Image3,isLiked,isReceived,createDate);
+                item = new FeedItem(postId,actorId,actorImage,actorName,title,content,Image,Image2,Image3,isLiked,isReceived,createDate,LikeCount,ReceiverCount,RatingCount);
 
                 con.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return item;
-
-
     }
-
 }
 

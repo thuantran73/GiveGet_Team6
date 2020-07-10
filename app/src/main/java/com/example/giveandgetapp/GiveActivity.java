@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +44,9 @@ public class GiveActivity extends AppCompatActivity {
     private TextView _postTitleGiveActivity;
     private ImageButton _btnRandom;
     private Button _btnApprove;
+    private ScrollView _scrollView;
+    private TextView _txtMain;
+
 
     private FeedListAdapter _adapterGiveActivity;
     private ArrayList<UserGiven> _listFeedItemGiveActivity;
@@ -60,11 +64,13 @@ public class GiveActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_give);
+        _scrollView = findViewById(R.id.scrollView);
         _listviewUserGiveActivity = findViewById(R.id.listviewusergiveactivity);
         _postImageGiveActivity = findViewById(R.id.postImagegiveactivity);
         _postTitleGiveActivity = findViewById(R.id.posttitlegiveactivity);
         _btnRandom = findViewById(R.id.btnRandom);
         _btnApprove = findViewById(R.id.btnApprove);
+        _txtMain = findViewById(R.id.txtMain);
 
         _sessionManager = new SessionManager(this);
         _currentUser = _sessionManager.getUserDetail();
@@ -105,13 +111,19 @@ public class GiveActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        _adapter = new UserGivenAdapter(this,_listFeedItemGiveActivity, _giveType, _scrollView);
         //Pick
         if(this._giveType == 1){
             _btnRandom.setVisibility(View.GONE);
         }
 
-
-        _adapter = new UserGivenAdapter(this,_listFeedItemGiveActivity, _giveType);
+        //check is any user exist
+        if(_listFeedItemGiveActivity.size() < 2){
+            _txtMain.setText("Không thể cho đồ, phải có ít nhất 2 người đăng ký bài viết này");
+            _btnApprove.setVisibility(View.INVISIBLE);
+            _listviewUserGiveActivity.setVisibility(View.INVISIBLE);
+            _btnRandom.setVisibility(View.INVISIBLE);
+        }
 
         _listviewUserGiveActivity.setAdapter(_adapter);
         _postImageGiveActivity.setImageBitmap(_postImage);
@@ -136,6 +148,12 @@ public class GiveActivity extends AppCompatActivity {
                 imgBtn.setImageResource(R.drawable.ic_hand_fill_foreground);
                 imgBtn.setVisibility(View.VISIBLE);
 
+                _btnRandom.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getApplicationContext(),"Bạn chỉ được chọn ngẫu nhiên một lần",Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
 
@@ -161,16 +179,38 @@ public class GiveActivity extends AppCompatActivity {
                             "           ,"+_postId +
                             "           ,1" +
                             "           ," + "CONVERT(datetime,'" +create_date+"',120)"+
-                            "           ,N'Xác bạn đã nhận được món đồ'" +
+                            "           ,N'Xác nhận bạn đã nhận được món đồ'" +
                             "           ,N'Bạn nhận được một món đồ của từ bài post "+_postTitle+"'" +
-                            "           ,3)";
+                            "           ,4)";
 
                     Connection con = _database.connectToDatabase();
 
                     try {
                     _database.excuteCommand(con,query);
                     _database.excuteCommand(con,queryAddNotification);
-                    String queryEditNotification = "UPDATE [Notification]" +
+                    String queryAddNotifications ="INSERT INTO [Notification]" +
+                            "           (UserId,PostId,Status,CreateDate,Title,Contents,Type)" +
+                            "     VALUES ";
+
+                    for(UserGiven userGiven : _listFeedItemGiveActivity){
+                        if(userGiven.userId != idUserChoosed){
+
+                            queryAddNotifications += " ("+userGiven.userId+
+                                    "           ,"+_postId +
+                                    "           ,1" +
+                                    "           ," + "CONVERT(datetime,'" +create_date+"',120)"+
+                                    "           ,N'Bài viết bạn đăng ký nhận đã được cho đồ'" +
+                                    "           ,N'Bài viết "+_postTitle+" mà bạn đăng ký đã được cho.'" +
+                                    "           ,0),";
+
+                        }
+                    }
+
+
+                    _database.excuteCommand(con,queryAddNotifications.substring(0, queryAddNotifications.length() - 1));
+
+
+                        String queryEditNotification = "UPDATE [Notification]" +
                                 "   SET Status = 2"+
                                 "   WHERE UserId="+_currentUser.id+
                                 "       AND PostId="+_postId+
@@ -193,13 +233,8 @@ public class GiveActivity extends AppCompatActivity {
                 }else{
                     Toast.makeText(getApplicationContext(),"Hãy chọn người nhận trước khi xác nhận",Toast.LENGTH_LONG).show();
                 }
-
-
             }
         });
-
-
-
     }
 
     @Override

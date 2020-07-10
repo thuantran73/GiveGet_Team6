@@ -3,14 +3,17 @@ package com.example.giveandgetapp.database;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.giveandgetapp.ApproveActivity;
 import com.example.giveandgetapp.GiveActivity;
 import com.example.giveandgetapp.PostDetailActivity;
 import com.example.giveandgetapp.R;
@@ -29,15 +32,38 @@ public class NotificationAdapter extends BaseAdapter {
     private Activity activity;
     private List<FeedNotification> feedNotifications;
     private Database database;
+    private List<Bitmap> imageList;
 
     public NotificationAdapter(Activity activity, List<FeedNotification> feedNotifications){
         this.activity = activity;
         this.feedNotifications = feedNotifications;
         this.database = new Database(activity.getApplicationContext());
+        this.imageList = new ArrayList<Bitmap>();
+        Connection con = database.connectToDatabase();
+        for (FeedNotification item: feedNotifications) {
+            imageList.add(database.getImageInDatabaseInSquire(con,item.idImagePost));
+        }
+
+        try {
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setFeedNotifications(List<FeedNotification> feedNotifications) {
         this.feedNotifications = feedNotifications;
+        Connection con = database.connectToDatabase();
+        imageList = new ArrayList<Bitmap>();
+        for (FeedNotification item: feedNotifications) {
+            imageList.add(database.getImageInDatabaseInSquire(con,item.idImagePost));
+        }
+
+        try {
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -63,12 +89,17 @@ public class NotificationAdapter extends BaseAdapter {
         if (convertView == null)
             convertView = inflater.inflate(R.layout.feed_notification, null);
 
+        ImageButton imgPost = convertView.findViewById(R.id.imageButton);
         TextView txtTitle = convertView.findViewById(R.id.txtTitle);
         TextView txtContent = convertView.findViewById(R.id.txtContent);
         TextView txtTime = convertView.findViewById(R.id.txtTime);
         LinearLayout parentLayout = convertView.findViewById(R.id.parentLayout);
 
+
+
         final FeedNotification item = this.feedNotifications.get(position);
+        imgPost.setImageBitmap(imageList.get(position));
+
         txtTitle.setText(item.title);
         txtContent.setText(item.contents);
 
@@ -124,6 +155,13 @@ public class NotificationAdapter extends BaseAdapter {
                             Intent intent2 = new Intent(activity.getApplicationContext(), RatingActivity.class);
                             intent2.putExtra("Post_Id",item.postId);
                             activity.startActivityForResult(intent2,12);
+                        }
+                        break;
+                    case 4:
+                        if(item.status == 1){
+                            Intent intent3 = new Intent(activity.getApplicationContext(), ApproveActivity.class);
+                            intent3.putExtra("Post_Id",item.postId);
+                            activity.startActivityForResult(intent3,120);
                         }
                         break;
 

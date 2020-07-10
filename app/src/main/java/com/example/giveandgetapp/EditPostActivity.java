@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -230,6 +231,27 @@ public class EditPostActivity extends AppCompatActivity {
                         String given_type = (_rdoGroupPickType.getCheckedRadioButtonId() == R.id.rdoPickeditpost)?"1":"2";
                         String expireType = amountDay+"";
 
+                        String queryGetAllReciever = "SELECT UserId" +
+                                "  FROM [Receive] " +
+                                "  WHERE PostId = " + _postId;
+                        ResultSet resultSet = _database.excuteCommand(con, queryGetAllReciever);
+
+                        while (resultSet.next()){
+                            String create_date = formater.format(date);
+
+                            String queryAddNotification = "INSERT INTO [Notification]" +
+                                    "           (PostId,UserId,Status,CreateDate,Title,Contents,Type)" +
+                                    "     VALUES" +
+                                    "           ("+_postId+","+resultSet.getInt("UserId") +
+                                    "           ,1" +
+                                    "           ," + "CONVERT(datetime,'" +create_date+"',120)"+
+                                    "           ,N'Bài viết của "+user.name+" đã được chỉnh sửa nội dung'" +
+                                    "           ,N'Bài viết "+user.name+" đã được chỉnh sửa nội dung'" +
+                                    "           ,1)";
+
+                            _database.excuteCommand(con,queryAddNotification);
+                        }
+
                         String query = "UPDATE [Post]" +
                                 "   SET CatalogId = "+catalogId +
                                 "      ,Image = " + image+
@@ -245,7 +267,7 @@ public class EditPostActivity extends AppCompatActivity {
 
                         _database.excuteCommand(con, query);
                         con.close();
-                        Toast.makeText(getApplicationContext(), "Bài đăng đã hoàn tất" , Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Chỉnh sửa bài viết hoàn tất" , Toast.LENGTH_LONG).show();
 
 
 
@@ -286,10 +308,31 @@ public class EditPostActivity extends AppCompatActivity {
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Storage
                 Intent intent = new Intent();
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Chọn Ảnh"), imagePickerIndex);
+
+                //Camera
+                Intent[] intentArray = null;
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    if (takePictureIntent != null) {
+                        intentArray = new Intent[]{takePictureIntent};
+                    } else {
+                        intentArray = new Intent[0];
+                    }
+                }
+
+                Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
+                chooserIntent.putExtra(Intent.EXTRA_INTENT, intent);
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
+                chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser");
+
+
+
+
+                startActivityForResult(Intent.createChooser(chooserIntent, "Chọn Ảnh"), imagePickerIndex);
             }
         };
         return listener;

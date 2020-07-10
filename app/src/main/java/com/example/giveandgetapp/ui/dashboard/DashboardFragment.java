@@ -62,10 +62,12 @@ public class DashboardFragment extends Fragment {
         _progressBar = root.findViewById(R.id.progressBar);
         _sessionManager = new SessionManager(root.getContext());
 
-        if(_dashboardViewModel.getListFeedItem().getValue() == null){
-            initListPost();
-        }
+//        if(_dashboardViewModel.getListFeedItem().getValue() == null){
+//            initListPost();
+//        }
 
+        initListPost();
+        
         _dashboardViewModel.getListFeedItem().observe(this, new Observer<ArrayList<FeedItem>>() {
             @Override
             public void onChanged(ArrayList<FeedItem> feedItems) {
@@ -109,15 +111,28 @@ public class DashboardFragment extends Fragment {
 
 
                     }else if(_countCurrent != -1){
+                        _countCurrent = -1;
                         _progressBar.setVisibility(View.VISIBLE);
 
-                        _countCurrent = loadMorePost();
-                        _progressBar.setVisibility(View.INVISIBLE);
+                        Runnable runable = new Runnable() {
+                            @Override
+                            public void run() {
+                                _countCurrent = loadMorePost();
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        _progressBar.setVisibility(View.INVISIBLE);
+                                    }
+                                });
+                            }
+                        };
+
+                        Thread thread = new Thread(runable);
+                        thread.start();
 
                     }else {
                         return;
                     }
-
                 }
             }
 
@@ -138,7 +153,7 @@ public class DashboardFragment extends Fragment {
         Connection con = _database.connectToDatabase();
         User currentUser = _sessionManager.getUserDetail();
 
-        String query = "SELECT p.Id, a.Id as ActorId, a.Name as ActorName, p.Title, p.Contents, l.UserId as IsLiked, r.UserId as IsReceived, a.Avatar as ActorImage, p.Image, p.Image2, p.Image3, p.CreateDate" +
+        String query = "SELECT p.ReceiverCount, p.LikeCount ,p.Id, a.Id as ActorId, a.Name as ActorName, p.Title, p.Contents, l.UserId as IsLiked, r.UserId as IsReceived, a.Avatar as ActorImage, p.Image, p.Image2, p.Image3, p.CreateDate, a.RatingCount" +
                 " FROM [Post] p" +
                 " INNER JOIN [User] a" +
                 " ON p.Actor = a.Id" +
@@ -157,17 +172,28 @@ public class DashboardFragment extends Fragment {
 
         ResultSet result = _database.excuteCommand(con, query);
 
+        ArrayList<FeedItem> listFeedItem=  _dashboardViewModel.getListFeedItem().getValue();
         int countRow = 0;
         try {
             while (result.next()){
                 int postId = result.getInt("Id");
 
                 if(postId > _dashboardViewModel.getMaxPostId().getValue().intValue()){
-                    _dashboardViewModel.getMaxPostId().setValue(postId);
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            _dashboardViewModel.getMaxPostId().setValue(postId);
+                        }
+                    });
                 }
 
                 if(postId < _dashboardViewModel.getMinPostId().getValue().intValue()){
-                    _dashboardViewModel.getMinPostId().setValue(postId);
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            _dashboardViewModel.getMinPostId().setValue(postId);
+                        }
+                    });
                 }
 
                 int actorId = result.getInt("ActorId");
@@ -180,14 +206,18 @@ public class DashboardFragment extends Fragment {
                 int Image = result.getInt("Image");
                 int Image2 = result.getInt("Image2");
                 int Image3 = result.getInt("Image3");
+                int likeCount = result.getInt("LikeCount");
+                int receiverCount = result.getInt("ReceiverCount");
+                float ratingCount = result.getFloat("RatingCount");
+
                 Timestamp tsCreateDate = result.getTimestamp("CreateDate");
                 Date createDate = null;
                 if(tsCreateDate != null){
                     createDate = new Date(tsCreateDate.getTime());
                 }
 
-                FeedItem item = new FeedItem(postId,actorId,actorImage,actorName,title,content,Image,Image2,Image3,isLiked,isReceived,createDate);
-                _dashboardViewModel.getListFeedItem().getValue().add(item);
+                FeedItem item = new FeedItem(postId,actorId,actorImage,actorName,title,content,Image,Image2,Image3,isLiked,isReceived,createDate,likeCount,receiverCount,ratingCount);
+                listFeedItem.add(item);
                 countRow++;
 
             }
@@ -195,7 +225,13 @@ public class DashboardFragment extends Fragment {
                 return countRow;
             }
 
-            _adapter.notifyDataSetChanged();
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    _dashboardViewModel.setListFeedItem(listFeedItem);
+                }
+            });
+
 
             con.close();
         } catch (SQLException e) {
@@ -213,7 +249,7 @@ public class DashboardFragment extends Fragment {
         _database = new Database(getContext());
         Connection con = _database.connectToDatabase();
 
-        String query = "SELECT p.Id, a.Id as ActorId, a.Name as ActorName, p.Title, p.Contents, l.UserId as IsLiked, r.UserId as IsReceived, a.Avatar as ActorImage, p.CreateDate, p.Image, p.Image2, p.Image3" +
+        String query = "SELECT p.ReceiverCount ,p.LikeCount ,p.Id, a.Id as ActorId, a.Name as ActorName, p.Title, p.Contents, l.UserId as IsLiked, r.UserId as IsReceived, a.Avatar as ActorImage, p.CreateDate, p.Image, p.Image2, p.Image3, a.RatingCount" +
                 " FROM [Post] p" +
                 " INNER JOIN [User] a" +
                 " ON p.Actor = a.Id" +
@@ -259,13 +295,16 @@ public class DashboardFragment extends Fragment {
                 int Image = result.getInt("Image");
                 int Image2 = result.getInt("Image2");
                 int Image3 = result.getInt("Image3");
+                int likeCount = result.getInt("LikeCount");
+                int receiverCount = result.getInt("ReceiverCount");
+                float ratingCount = result.getFloat("RatingCount");
                 Timestamp tsCreateDate = result.getTimestamp("CreateDate");
                 Date createDate = null;
                 if(tsCreateDate != null){
                     createDate = new Date(tsCreateDate.getTime());
                 }
 
-                FeedItem item = new FeedItem(postId,actorId,actorImage,actorName,title,content,Image,Image2,Image3,isLiked,isReceived,createDate);
+                FeedItem item = new FeedItem(postId,actorId,actorImage,actorName,title,content,Image,Image2,Image3,isLiked,isReceived,createDate,likeCount,receiverCount,ratingCount);
                 listFeedItem.add(item);
 
             }
