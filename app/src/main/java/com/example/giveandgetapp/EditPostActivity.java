@@ -257,7 +257,7 @@ public class EditPostActivity extends AppCompatActivity {
                                 "      ,Image = " + image+
                                 "      ,Image2 = " + image2+
                                 "      ,Image3 = " + image3+
-                                "      ,Title = " + "'N" +title+ "'" +
+                                "      ,Title = " + "N'" +title+ "'" +
                                 "      ,Contents = " + "N'" +content+ "'" +
                                 "      ,ExpireDate = " + "CONVERT(datetime,'" +expire_date+ "',120)"+
                                 "      ,GiveType = " +given_type+
@@ -343,23 +343,43 @@ public class EditPostActivity extends AppCompatActivity {
         switch (requestCode){
             case PICK_IMAGE_ONE:
                 if(resultCode == Activity.RESULT_OK){
-                    Uri imgURI = data.getData();
-                    _imgbtnPic1EditPost.setImageURI(imgURI);
-                    _isPickImage[0] = true;
+                    if(data.getDataString() != null){
+                        Uri imgURI = data.getData();
+                        _imgbtnPic1EditPost.setImageURI(imgURI);
+                        _isPickImage[0] = true;
+                    }else{
+                        Bitmap photo = (Bitmap) data.getExtras().get("data");
+                        _imgbtnPic1EditPost.setImageBitmap(photo);
+                        _isPickImage[0] = true;
+                    }
                 }
                 break;
             case PICK_IMAGE_TWO:
                 if(resultCode == Activity.RESULT_OK){
-                    Uri imgURI = data.getData();
-                    _imgbtnPic2EditPost.setImageURI(imgURI);
-                    _isPickImage[1] = true;
+                    if(data.getDataString() != null){
+                        Uri imgURI = data.getData();
+                        _imgbtnPic2EditPost.setImageURI(imgURI);
+                        _isPickImage[1] = true;
+                    }else{
+                        Bitmap photo = (Bitmap) data.getExtras().get("data");
+                        _imgbtnPic2EditPost.setImageBitmap(photo);
+                        _isPickImage[1] = true;
+                    }
+
                 }
                 break;
             case PICK_IMAGE_THREE:
                 if(resultCode == Activity.RESULT_OK){
-                    Uri imgURI = data.getData();
-                    _imgbtnPic3EditPost.setImageURI(imgURI);
-                    _isPickImage[2] = true;
+                    if(data.getDataString() != null) {
+                        Uri imgURI = data.getData();
+                        _imgbtnPic3EditPost.setImageURI(imgURI);
+                        _isPickImage[2] = true;
+                    }else{
+                        Bitmap photo = (Bitmap) data.getExtras().get("data");
+                        _imgbtnPic3EditPost.setImageBitmap(photo);
+                        _isPickImage[2] = true;
+                    }
+
                 }
                 break;
         }

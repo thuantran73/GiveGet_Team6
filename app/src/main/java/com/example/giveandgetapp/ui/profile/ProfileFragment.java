@@ -503,15 +503,11 @@ public class ProfileFragment extends Fragment {
                     //Add action listener
                     btnReviewReceive.setOnClickListener(getButtonReviewClickListener(item.postId));
                 }
-
                 dlogPostReceive.show();
-
             }
         });
         return root;
     }
-
-
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -693,7 +689,8 @@ public class ProfileFragment extends Fragment {
 
             String query = "SELECT p.Actor ,p.Id, p.Image, p.Title, p.Status, p.Receiver" +
                     " FROM [Post] p " +
-                    " WHERE p.Receiver = "+currentUser.id;
+                    " WHERE p.Receiver = "+currentUser.id+
+                    " ORDER BY Id DESC";
             ResultSet result = _database.excuteCommand(con, query);
 
             while(result.next()){
@@ -742,7 +739,8 @@ public class ProfileFragment extends Fragment {
             User currentUser = _sessionManager.getUserDetail();
 
             String query = "SELECT Id,Image,Title,Status" +
-                    "  FROM [Post] Where Actor = "+currentUser.id;
+                    "  FROM [Post] Where Actor = "+currentUser.id+
+                    "  ORDER BY Id DESC";
             ResultSet result = _database.excuteCommand(con, query);
             int maxIdPostProfileActor = 0;
 
