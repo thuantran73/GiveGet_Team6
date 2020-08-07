@@ -203,7 +203,7 @@ public class FeedListAdapter extends BaseAdapter {
         actorName.setText(item.actorName);
         title.setText(item.title);
         content.setText(item.contents);
-        ratingCount.setText("Đã được đánh giá: "+ ProfileFragment.roundHalf(item.ratingCount));
+        ratingCount.setText("Đã được tặng sao: "+ ProfileFragment.roundHalf(item.ratingCount));
 
         //Set text for like and receiver
         String strLikeCount = (item.likeCount>0)?item.likeCount+" lượt thích":"";

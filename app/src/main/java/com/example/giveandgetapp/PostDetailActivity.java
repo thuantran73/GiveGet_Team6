@@ -167,7 +167,7 @@ public class PostDetailActivity extends AppCompatActivity {
                 _imageActor.setImageBitmap(item.actorImage);
                 _txtTitlePost.setText(item.title);
                 _txtContentPost.setText(item.contents);
-                _txtRatingCount.setText("Đã được đánh giá: "+ProfileFragment.roundHalf(ratingCount));
+                _txtRatingCount.setText("Đã được tặng sao: "+ProfileFragment.roundHalf(ratingCount));
 
                 //Set Time post
                 String timeStr = "";

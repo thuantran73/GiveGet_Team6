@@ -8,6 +8,7 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -106,7 +107,7 @@ public class ActorInforActivity extends AppCompatActivity {
                 lbltenuser.setText("Tên: "+resultSet.getString("Name"));
                 lbllopuser.setText("Lớp: "+resultSet.getString("Class"));
                 lblmssvuser.setText("MSSV: "+resultSet.getString("StudentId"));
-                lblsdtuser.setText("SDT: "+resultSet.getString("Phone"));
+                lblsdtuser.setText(resultSet.getString("Phone"));
             }
 
             con.close();

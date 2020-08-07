@@ -474,7 +474,7 @@ public class ProfileFragment extends Fragment {
 
                 //Are Post is expire
                 else if(item.status == 4 && _sessionManager.getUserDetail().id == item.receiveId){
-                    btnRatingReceive.setText("Đánh giá");
+                    btnRatingReceive.setText("Tặng sao");
 
                     btnRatingReceive.setVisibility(View.VISIBLE);
 

@@ -135,8 +135,9 @@
                         android:layout_marginLeft="150dp"
                         android:layout_marginTop="10dp"
                         android:background="@null"
+                        android:hint="Bắt buộc nhập"
                         android:maxLength="10"
-                        android:hint="Bắt buộc nhập"/>
+                        android:phoneNumber="true" />
 
                     <EditText
                         android:id="@+id/txtemailedit"

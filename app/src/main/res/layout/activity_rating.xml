@@ -61,7 +61,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
                     android:layout_marginLeft="10dp"
-                    android:text="Đánh giá cho bài viết này."
+                    android:text="Bạn có hài lòng giao dịch được nhận không?"
                     android:textSize="23dp" />
 
             </LinearLayout>
