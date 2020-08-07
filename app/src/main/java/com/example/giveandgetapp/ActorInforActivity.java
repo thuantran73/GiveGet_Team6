@@ -1,10 +1,17 @@
 package com.example.giveandgetapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -34,19 +41,20 @@ public class ActorInforActivity extends AppCompatActivity {
     public Button _btnKetthucActorInfor;
     public TextView _labelInfo;
 
+    private static final int REQUEST_CALL = 1;
+
 
     private Database _database;
 
     //Round rating count
     public static double roundHalf(double number) {
-        double diff = number - (int)number;
+        double diff = number - (int) number;
         if (diff < 0.25) {
-            return (int)number;
-        }
-        else if (diff < 0.75) {
-            return (int)number + 0.5;
+            return (int) number;
+        } else if (diff < 0.75) {
+            return (int) number + 0.5;
         } else {
-            return (int)number + 1;
+            return (int) number + 1;
         }
     }
 
@@ -55,7 +63,7 @@ public class ActorInforActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_actor_infor);
-        this.actorId = getIntent().getIntExtra("Actor_Id",0);
+        this.actorId = getIntent().getIntExtra("Actor_Id", 0);
         this._isFromRating = getIntent().getBooleanExtra("IsFromRating", false);
 
 
@@ -65,8 +73,7 @@ public class ActorInforActivity extends AppCompatActivity {
         this.sobaocao = findViewById(R.id.sobaocao);
         _btnKetthucActorInfor = findViewById(R.id.btnKethucActorInfor);
         _labelInfo = findViewById(R.id.thongtinActorInfoActivity);
-        if(_isFromRating)
-        {
+        if (_isFromRating) {
             _btnKetthucActorInfor.setVisibility(View.VISIBLE);
             _labelInfo.setVisibility(View.VISIBLE);
         }
@@ -89,32 +96,60 @@ public class ActorInforActivity extends AppCompatActivity {
                 "      ,[RatingCount]" +
                 "      ,[NumberPostHadRated]" +
                 "  FROM [User]" +
-                "  WHERE Id = "+actorId;
+                "  WHERE Id = " + actorId;
 
         ResultSet resultSet = _database.excuteCommand(con, query);
 
-        try{
-            if(resultSet.next()){
+        try {
+            if (resultSet.next()) {
                 avataruser.setImageBitmap(_database.getImageInDatabaseInSquire(con, resultSet.getInt("Avatar")));
-                sobaidang.setText(resultSet.getInt("NumberPostHadRated")+"");
+                sobaidang.setText(resultSet.getInt("NumberPostHadRated") + "");
                 int rpc = resultSet.getInt("ReportCount");
                 float rtc = resultSet.getFloat("RatingCount");
                 double parsertcToDouble = rtc;
                 double rating = roundHalf(parsertcToDouble);
-                sodanhgia.setText(rating+"");
-                sobaocao.setText(resultSet.getInt("ReportCount")+"");
+                sodanhgia.setText(rating + "");
+                sobaocao.setText(resultSet.getInt("ReportCount") + "");
 
-                lbltenuser.setText("Tên: "+resultSet.getString("Name"));
-                lbllopuser.setText("Lớp: "+resultSet.getString("Class"));
-                lblmssvuser.setText("MSSV: "+resultSet.getString("StudentId"));
+                lbltenuser.setText("Tên: " + resultSet.getString("Name"));
+                lbllopuser.setText("Lớp: " + resultSet.getString("Class"));
+                lblmssvuser.setText("MSSV: " + resultSet.getString("StudentId"));
                 lblsdtuser.setText(resultSet.getString("Phone"));
             }
 
             con.close();
 
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
+
+        Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(Uri.parse("tel:" + "Phone"));
+        if (checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+            return;
+        }
+        startActivity(intent);
+
+//        public void makeCall() {
+//            String number = lblsdtuser.getText().toString();
+//
+//                if (ContextCompat.checkSelfPermission(ActorInforActivity.this,
+//                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+//                    ActivityCompat.requestPermissions(ActorInforActivity.this,
+//                            new String[] {Manifest.permission.CALL_PHONE}, REQUEST_CALL);
+//                }else {
+//                    String dial = "tel:" + "Phone";
+//                    startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(dial)));
+//                }
+//
+//        };
 
         _btnKetthucActorInfor.setOnClickListener(new View.OnClickListener() {
             @Override
