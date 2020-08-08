@@ -146,6 +146,7 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginTop="0dp"
                     android:phoneNumber="true" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -166,17 +167,25 @@
                     android:visibility="invisible">
                 </TextView>
 
-                <Button
-                    android:id="@+id/btnKethucActorInfor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_gravity="center_horizontal"
-                    android:text="Kết thúc"
-                    android:textColor="#FF0000"
-                    android:visibility="invisible">
-                </Button>
             </LinearLayout>
+
+            <Button
+                android:id="@+id/btnCall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:text="Gọi cho người cho đồ" />
+
+            <Button
+                android:id="@+id/btnKethucActorInfor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="0dp"
+                android:text="Kết thúc"
+                android:textColor="#FF0000"
+                android:visibility="invisible"></Button>
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

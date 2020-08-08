@@ -11,10 +11,12 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TabHost;
 
 import com.example.giveandgetapp.database.Database;
 import com.example.giveandgetapp.database.ResultListUser;
 import com.example.giveandgetapp.database.ResultListUserAdapter;
+
 import com.example.giveandgetapp.database.ResultSearch;
 import com.example.giveandgetapp.database.ResultSearchAdapter;
 import com.example.giveandgetapp.ui.search.SearchViewModel;
@@ -35,6 +37,7 @@ public class ListUserActivity extends AppCompatActivity {
     private ListView _listUserLikedRegistered;
     private int postId;
     private Activity activity;
+
 //    private SearchViewModel searchViewModel;
     private ResultListUserAdapter _adapter;
     private ArrayList<ResultListUser> _listResultUser;

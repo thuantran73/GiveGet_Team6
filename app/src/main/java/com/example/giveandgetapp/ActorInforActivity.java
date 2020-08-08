@@ -40,6 +40,7 @@ public class ActorInforActivity extends AppCompatActivity {
     private TextView lblsdtuser;
     public Button _btnKetthucActorInfor;
     public TextView _labelInfo;
+    public Button btnPhone;
 
     private static final int REQUEST_CALL = 1;
 
@@ -63,6 +64,7 @@ public class ActorInforActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_actor_infor);
+        Button btnCall;
         this.actorId = getIntent().getIntExtra("Actor_Id", 0);
         this._isFromRating = getIntent().getBooleanExtra("IsFromRating", false);
 
@@ -123,33 +125,54 @@ public class ActorInforActivity extends AppCompatActivity {
 
         }
 
-        Intent intent = new Intent(Intent.ACTION_CALL);
-        intent.setData(Uri.parse("tel:" + "Phone"));
-        if (checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-            return;
-        }
-        startActivity(intent);
+        btnPhone = findViewById(R.id.btnCall);
 
-//        public void makeCall() {
-//            String number = lblsdtuser.getText().toString();
+        btnPhone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String phone = lblsdtuser.getText().toString();
+//                String s = "tel:" + phone;
+//                Intent intent = new Intent(Intent.ACTION_CALL);
+//                intent.setData(Uri.parse(s));
+                if (ContextCompat.checkSelfPermission(ActorInforActivity.this,
+                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(ActorInforActivity.this,
+                            new String[] {Manifest.permission.CALL_PHONE}, REQUEST_CALL);
+                }else {
+                    String s = "tel:" + phone;
+                    startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(s)));
+                }
+//                startActivity(intent);
+            }
+        });
+
+//        Intent intent = new Intent(Intent.ACTION_CALL);
+//        intent.setData(Uri.parse("tel:" + "Phone"));
+//        if (checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+//            // TODO: Consider calling
+//            //    Activity#requestPermissions
+//            // here to request the missing permissions, and then overriding
+//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//            //                                          int[] grantResults)
+//            // to handle the case where the user grants the permission. See the documentation
+//            // for Activity#requestPermissions for more details.
+//            return;
+//        }
+//        startActivity(intent);
 //
-//                if (ContextCompat.checkSelfPermission(ActorInforActivity.this,
-//                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-//                    ActivityCompat.requestPermissions(ActorInforActivity.this,
-//                            new String[] {Manifest.permission.CALL_PHONE}, REQUEST_CALL);
-//                }else {
-//                    String dial = "tel:" + "Phone";
-//                    startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(dial)));
-//                }
-//
-//        };
+////        public void makeCall() {
+////            String number = lblsdtuser.getText().toString();
+////
+////                if (ContextCompat.checkSelfPermission(ActorInforActivity.this,
+////                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+////                    ActivityCompat.requestPermissions(ActorInforActivity.this,
+////                            new String[] {Manifest.permission.CALL_PHONE}, REQUEST_CALL);
+////                }else {
+////                    String dial = "tel:" + "Phone";
+////                    startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(dial)));
+////                }
+////
+////        };
 
         _btnKetthucActorInfor.setOnClickListener(new View.OnClickListener() {
             @Override
